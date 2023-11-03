@@ -32,7 +32,7 @@ net_node_pattern = r'\(node\s.*?\)\)'
 information = "1.txt"
 
 # 读取并分割文件为行
-net_file_contents = open("F:\\Kicad_project\\usb_ttl\\usb_ttl.net", "r").read()
+net_file_contents = open("C:\\Users\\23915\\Desktop\\eda\\demo.net", "r").read()
 
 components_match = re.search(components_pattern, net_file_contents, re.DOTALL)
 libparts_match = re.search(libparts_pattern, net_file_contents, re.DOTALL)
@@ -44,11 +44,8 @@ nets = nets_match.group(1).strip() if nets_match else "Not found"
 
 net_match = re.findall(net_pattern, nets, re.DOTALL) #每个net搞定
 comp_match = re.findall(comp_pattern, components, re.DOTALL)
-#print(nets)
-#print(comp_match)
 
 #net解析 net ref pinfunction pintype
-#可以优化，解决net_name中有（）无法用strip一次性删除的bug
 for net in net_match:
     #net_name解析
     net_name_match = re.search(net_name_pattern, net, re.DOTALL)
@@ -59,12 +56,8 @@ for net in net_match:
     #net_node解析
     net_node_match = re.findall(net_node_pattern, net, re.DOTALL)
 
-# print("name_list:") 
-# print(net_str)
 
 #components主要解析 ref、footprint、value、tstamps
-# print("components:\n")
-#print(comp_match)
 for comp in comp_match:
     #comp_ref解析
     comp_ref_match = re.search(comp_ref_pattern, comp, re.DOTALL)
@@ -105,20 +98,11 @@ print(comp_tstamps_list)
 print("\nnet_name_list:")
 print(net_name_list)
 
-# file = open(information, 'w')
-# file.write(components + "\n" + libparts + "\n" + nets + "\n")
-
-# print(f"information saved as {information}")
-
-
-
-
 """
 
 cgc's part
 
 """
-
 
 #将指定.net文件中的net_name载入目标pcb文件
 def load_net(net_list, objectboard):
@@ -139,15 +123,15 @@ def load_fp(fp_name_list, objectboard):
     original_path = 'F:\\KiCad\\7.0\\share\\kicad\\footprints\\' #kicad封装库的地址
     lenth = len(fp_name_list)
     for i in range(lenth):
-        lib_name = extract_string(comp_footprint_list[i], '^', ':')
-        fp_name = extract_string(comp_footprint_list[i], ':', '$') #此处作分割，方便索引
+        lib_name = extract_string(fp_name_list[i], '^', ':')
+        fp_name = extract_string(fp_name_list[i], ':', '$') #此处作分割，方便索引
         fp_path = original_path + lib_name + '.pretty\\' + fp_name + '.kicad_mod' #封装的具体地址
         fp_origin = Footprint.from_file(filepath = fp_path)
         objectboard.footprints.append(fp_origin)
         objectboard.footprints[i].libraryNickname = lib_name #kicad_mod文件中不含libnickname，需要额外添加
 
-
-board = Board.create_new()
-load_fp(comp_footprint_list, board)
-load_net(net_name_list, board)
-board.to_file('C:\\Users\\chen\\Desktop\\kiworkspace\\test.kicad_pcb')
+if __main__ == "__main__":
+    board = Board.create_new()
+    #load_fp(comp_footprint_list, board)
+    load_net(net_name_list, board)
+    board.to_file('C:\\Users\\2391\\Desktop\\eda\\kiworkspace\\test.kicad_pcb')
