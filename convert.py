@@ -84,7 +84,6 @@ def load_fp(fp_name_list, objectboard):
         lib_name = extract_string(fp_name_list[i], '^', ':')
         fp_name = extract_string(fp_name_list[i], ':', '$') #此处作分割，方便索引
         fp_path = original_path + lib_name + '.pretty\\' + fp_name + '.kicad_mod' #封装的具体地址
-        print(fp_path)
         fp_origin = Footprint.from_file(filepath = fp_path)
         objectboard.footprints.append(fp_origin)
         objectboard.footprints[i].libraryNickname = lib_name #kicad_mod文件中不含libnickname，需要额外添加
@@ -159,7 +158,6 @@ print(comp_tstamps_list)
 
 print("\nnet_name_list:")
 print(net_name_list)
-
 
 def main():
     board = Board.create_new()
