@@ -1,6 +1,6 @@
 from kiutils.board import Board
 from kiutils.utils import sexpr
-from kiutils.items.common import Net
+from kiutils.items.common import Net, Position
 from kiutils.footprint import Footprint
 from kiutils.items.fpitems import *
 import re
@@ -160,7 +160,6 @@ def main():
     board = Board.create_new()
     load_fp(comp_footprint_list, board)
     load_net(net_name_list, board)
-    
 
     #net解析 net ref pinfunction pintype
     for net_inst in net_match:
@@ -175,11 +174,14 @@ def main():
                 if footprint.graphicItems[0].text == ref:
                     for pad in footprint.pads:
                         if pad.number == pin:
-                            pad.net = board.nets[net_match.index(net_inst)]
+                            pad.net = board.nets[net_match.index(net_inst)+1]
                             pad.pinFunction = pinfunction
                             pad.pinType = pintype
-                #print(footprint.netTiePadGroups)  
-           # board.footprints.
+                #footprint.
+                #print(footprint.netTiePadGroups) 
+            #print(node+' '+net_name_list[net_match.index(net_inst)]) 
+                #footprint.position(X=50 + net_match.index(net_inst))
+    #print(board.footprints.position)
     board.to_file('E:\\sch-convert-pcd\\test.kicad_pcb')
     sys.exit()
 
