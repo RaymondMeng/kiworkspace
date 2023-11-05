@@ -35,18 +35,17 @@ net_node_pattern = r'\(node\s.*?\)\)'
 ######*******function*******#######
 def load_net(net_list, objectboard):
     """
-    将指定.net文件中的net_name载入目标pcb文件
+    将指定.net文件中的net_list载入目标pcb文件
 
     Args:
-    - net_list: .net文件中net的列表集合
-    - objectboard: kiutils库中Board类
+    - net_list    : .net文件中net的列表集合
+    - objectboard : kiutils库中Board类
 
     Returns: None
     """
     lenth = len(net_list)
     for i in range(lenth):
         objectboard.nets.append(Net(number = i+1, name = net_list[i])) #因为是列表，值可以同步到外面参数引用
-
 
 
 def extract_string(text, start_symbol, end_symbol):
@@ -70,7 +69,8 @@ def extract_string(text, start_symbol, end_symbol):
 #将footprint从kicad的封装库读取为footprint类，然后添加到pcb文件中
 def load_fp(fp_name_list, objectboard):
     """
-    将指定.net文件中的footprint载入目标pcb文件
+    将指定.net文件中的footprint载入目标pcb文件，包括libname以及fp_text。
+    利用fp_name搜索读取kicad_mod文件的具体信息
 
     Args:
     - fp_name_list: .net文件中footprint的列表集合
@@ -88,7 +88,7 @@ def load_fp(fp_name_list, objectboard):
         objectboard.footprints.append(fp_origin)
         objectboard.footprints[i].libraryNickname = lib_name #kicad_mod文件中不含libnickname，需要额外添加
         objectboard.footprints[i].graphicItems[0].text = comp_ref_list[i] #修复ref_name没有命名的问题
-
+        objectboard.footprints[i].graphicItems[1].text = comp_value_list[i] #添加fp_text中的value值
 
 
 #######*******regular expression*******#######
@@ -108,15 +108,12 @@ comp_match = re.findall(comp_pattern, components, re.DOTALL)
 
 #net解析 net ref pinfunction pintype
 for net in net_match:
-    #net_name解析
+     #net_name解析
     net_name_match = re.search(net_name_pattern, net, re.DOTALL)
     net_name = net_name_match.group(0).strip() if net_name_match else "Not found"
     net_name = net_name.lstrip('(name "')
-    net_name = net_name.rstrip(')')#分开切除，避免破坏name
+    net_name = net_name.rstrip(')') #分开切除，避免破坏name
     net_name_list.append(net_name.rstrip('"'))
-    #net_node解析
-    net_node_match = re.findall(net_node_pattern, net, re.DOTALL)
-
 
 #components主要解析 ref、footprint、value、tstamps
 #修改一下正则模式，改为首尾匹配，避免字母被截取
@@ -163,6 +160,26 @@ def main():
     board = Board.create_new()
     load_fp(comp_footprint_list, board)
     load_net(net_name_list, board)
+    
+
+    #net解析 net ref pinfunction pintype
+    for net_inst in net_match:
+        #net_node解析
+        net_node_match = re.findall(net_node_pattern, net_inst, re.DOTALL)
+        for node in net_node_match:
+            ref = extract_string(node, '\(ref\s"', '"\)\s\(pin')
+            pin = extract_string(node, '\(pin\s"', '"\)\s\(pin')
+            pinfunction = extract_string(node, '\(pinfunction\s"', '"\)')
+            pintype = extract_string(node, '\(pintype\s"', '"\)\)') 
+            for footprint in board.footprints:
+                if footprint.graphicItems[0].text == ref:
+                    for pad in footprint.pads:
+                        if pad.number == pin:
+                            pad.net = board.nets[net_match.index(net_inst)]
+                            pad.pinFunction = pinfunction
+                            pad.pinType = pintype
+                #print(footprint.netTiePadGroups)  
+           # board.footprints.
     board.to_file('E:\\sch-convert-pcd\\test.kicad_pcb')
     sys.exit()
 
