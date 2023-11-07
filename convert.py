@@ -3,6 +3,7 @@ from kiutils.utils import sexpr
 from kiutils.items.common import Net, Position
 from kiutils.footprint import Footprint
 from kiutils.items.fpitems import *
+from pcbnew import *
 import re
 import sys
 
@@ -180,9 +181,11 @@ def main():
                 #footprint.
                 #print(footprint.netTiePadGroups) 
             #print(node+' '+net_name_list[net_match.index(net_inst)]) 
-                #footprint.position(X=50 + net_match.index(net_inst))
+                #footprint.position(X=50.0 + net_match.index(net_inst))
     #print(board.footprints.position)
     board.to_file('E:\\sch-convert-pcd\\test.kicad_pcb')
+    pcb = LoadBoard('E:\\sch-convert-pcd\\test.kicad_pcb')
+    pcb.Save('e:\\sch-convert-pcd\\output.kicad_pcb')
     sys.exit()
 
 if __name__ == "__main__":
